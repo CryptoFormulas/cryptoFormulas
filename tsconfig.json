@@ -1,0 +1,17 @@
+{
+    "compilerOptions": {
+        "target": "es5",
+        "moduleResolution": "node",
+        "module": "commonjs",
+        "lib": ["es2017"],
+
+        "outDir": "dist",
+        "rootDir": ".",
+        "allowSyntheticDefaultImports": true,
+
+        "declaration": true
+    },
+    "include": [
+        "src/formula/**/*.ts"
+    ]
+}

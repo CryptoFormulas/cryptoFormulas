@@ -1,0 +1,26 @@
+{
+  "name": "hashFormulas",
+  "version": "0.2.0",
+  "license": "GPL-3.0-only",
+  "scripts": {
+    "build": "tsc && node makefile.js build",
+    "watch": "node makefile.js watch",
+    "test": "mocha -r ts-node/register --timeout 10000 tests/tests.ts"
+  },
+  "devDependencies": {
+    "@types/mocha": "^7.0.1",
+    "chai": "^4.2.0",
+    "fast-glob": "^3.2.2",
+    "mocha": "^7.1.0",
+    "openzeppelin-solidity": "^2.5.0",
+    "solc": "^0.6.3",
+    "solidity-bytes-utils": "^0.0.8",
+    "soliditySapper": "git://github.com/ondratra/soliditySapper#~0.5.0",
+    "ts-node": "^8.6.2",
+    "typescript": "^3.8.2"
+  },
+  "dependencies": {
+    "keccak256": "^1.0.0",
+    "web3x": "^4.0.4"
+  }
+}
