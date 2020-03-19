@@ -1,5 +1,7 @@
 # Crypto Formulas
 
+[![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](http://www.gnu.org/licenses/gpl-3.0)
+
 Crypto Formulas is Ethereum contract written in Solidity that brings new ways of interaction
 with the most popular Ethereum based assets (Ether, ERC20 tokens, and ERC721 tokens).
 Using it, you can create sequences of operations that are executed atomically (all of them or none at all).
