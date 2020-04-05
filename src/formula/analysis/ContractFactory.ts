@@ -89,9 +89,14 @@ export class ContractFactory implements IContractFactory {
 
         // naive way of checking contract for the method presence (because there is no solid way to do that now)
         try {
+            // see ERC721 implementation for signature computation
+            const ierc721Signature = '0x80ac58cd' // minimum ERC721
+            const ierc721WithMetadataSignature = '0x9a20483d' // first draft of ERC721, including metadata (as defined in https://github.com/ethereum/EIPs/issues/721 and used by CryptoKitties https://etherscan.io/address/0x06012c8cf97bead5deae237070f9587f8e7a266d#code)
+
             const contract = await this.getContractErc721(contractAddress)
-            const ierc721Signature = '0x80ac58cd' // see ERC721 implementation for signature computation
-            const result = await contract.methods.supportsInterface(ierc721Signature).call()
+            const result = false
+                || await contract.methods.supportsInterface(ierc721Signature).call()
+                || await contract.methods.supportsInterface(ierc721WithMetadataSignature).call()
 
             return result
         } catch (error) {

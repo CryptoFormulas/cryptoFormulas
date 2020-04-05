@@ -6,6 +6,9 @@ import {IInstructionType} from './IInstructionType'
 import {ITypes, ITypeAlias} from '../format'
 import {CommonErrorReasons} from '../instructions/CommonErrorReasons'
 import {checkSenderEndpointEmpty, checkTargetEndpointEmpty, checkSenderIsTarget, checkNotContract, checkTokenAddressEmpty, checkTargetIsContract} from './commonAnalysisChecks'
+import {Contract} from 'web3x/contract'
+import {ContractFunctionEntry, ContractEntryDefinition} from 'web3x/contract/abi'
+import {ContractAbi} from 'web3x/contract/abi/contract-abi'
 
 
 /**
@@ -14,7 +17,9 @@ import {checkSenderEndpointEmpty, checkTargetEndpointEmpty, checkSenderIsTarget,
 export enum InstructionErrorReasons {
     noErc721ContractAtAddress = 'noErc721ContractAtAddress',
     noErc721TokenOwner = 'noErc721TokenOwner',
-    noErc721Approval = 'noErc721Approval'
+    noErc721Approval = 'noErc721Approval',
+    incompleteErc721_noApprovalCheck = 'incompleteErc721_noApprovalCheck',
+    incompleteErc721_noApprovalForAll_missingApproval = 'incompleteErc721_noApprovalForAll_missingApproval',
 }
 
 /**
@@ -190,13 +195,44 @@ async function checkTokenAllowance(instructionCode: number, tokenId: BigNumber, 
     const tokenContract = await contractFactory.getContractErc721(tokenAddress)
     const formulasContract = await contractFactory.getContractFormulas(contractAddress)
 
-    const isApproved = false
-        || (await tokenContract.methods.getApproved(tokenId).call()).equals(formulasContract.address)
-        || await tokenContract.methods.isApprovedForAll(senderAddress, formulasContract.address).call()
+    try {
+        const isApproved = false
+            || (await tokenContract.methods.getApproved(tokenId).call()).equals(formulasContract.address)
+            || await tokenContract.methods.isApprovedForAll(senderAddress, formulasContract.address).call()
 
-    if (isApproved) {
+        if (isApproved) {
+            return []
+        }
+    } catch (error) {
+        // try to check approval in atypical contract
+        const isApproved = await checkTokenAllowance_originalDraftErc721(formulasContract, tokenContract, tokenId)
+        if (isApproved === null) {
+            return [{
+                instructionCode,
+                errorReason: InstructionErrorReasons.incompleteErc721_noApprovalCheck,
+                errorType: ErrorTypes.warning,
+                errorParameters: {
+                    ...errorParameters,
+                    tokenContract,
+                }
+            }]
+        }
+
+        if (!isApproved) {
+            return [{
+                instructionCode,
+                errorReason: InstructionErrorReasons.incompleteErc721_noApprovalForAll_missingApproval,
+                errorType: ErrorTypes.warning,
+                errorParameters: {
+                    ...errorParameters,
+                    tokenContract,
+                }
+            }]
+        }
+
         return []
     }
+
     return [{
         instructionCode,
         errorReason: InstructionErrorReasons.noErc721Approval,
@@ -206,4 +242,69 @@ async function checkTokenAllowance(instructionCode: number, tokenId: BigNumber, 
             tokenContract,
         }
     }]
+}
+
+/*
+    First draft of ERC721 hadn't methods `getApproved()` and `isApprovedForAll`,
+    thus contracts implementing this obsolete standard can't be checked for approval
+    in unified way.
+*/
+async function checkTokenAllowance_originalDraftErc721(formulasContract: Contract<void>, tokenContract: Contract<void>, tokenId: BigNumber): Promise<boolean | null> {
+    // try CryptoKitties
+    try {
+        const extraAbi: ContractEntryDefinition[] = [{
+            constant: true,
+            inputs: [
+                {
+                    'name': '',
+                    'type': 'uint256'
+                }
+            ],
+            name: 'kittyIndexToApproved',
+            outputs: [
+                {
+                    'name': '',
+                    'type': 'address'
+                }
+            ],
+            payable: false,
+            stateMutability: 'view' as 'view',
+            type: 'function' as 'function'
+        }]
+
+        const kittyContract = appendAbiToContract(tokenContract, extraAbi)
+        const isApproved = (await kittyContract.methods.kittyIndexToApproved(tokenId).call()).equals(formulasContract.address)
+
+        return isApproved
+    } catch (error) {
+        //pass
+    }
+
+    // no special ERC721 found
+    return null
+}
+
+/*
+    Clone the given contract and append additional ABI to its definition.
+*/
+function appendAbiToContract(contract: Contract<void>, abiToAppend: ContractEntryDefinition[]): Contract<void> {
+    // this reads private contracts properties to overcome web3x missing Contract property `options`
+    // as defined here https://web3js.readthedocs.io/en/v1.2.0/web3-eth-contract.html#new-contract
+    // can be improved after https://github.com/xf00f/web3x/issues/79 is resolved
+
+    const oldAbi = []
+        .concat((contract as any).contractAbi.functions)
+        .concat((contract as any).contractAbi.events)
+        .concat((contract as any).contractAbi.ctor)
+        .map(item => item.entry)
+    //const oldAbi = contract.options.jsonInterface
+
+    const newAbi: ContractAbi = new ContractAbi([
+        ...oldAbi,
+        ...abiToAppend,
+    ])
+
+    const newContract = new Contract<void>((contract as any).eth, newAbi, contract.address, (contract as any).defaultOptions)
+
+    return newContract
 }
