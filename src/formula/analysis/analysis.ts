@@ -7,6 +7,7 @@ import {Contract} from 'web3x/contract'
 import {IFormulaAnalysis, emptyAnalysis, IAbiGetter, ErrorTypes, PresignStates, IContractFactory, IAnalyzerResult, IAnalyzerResultError, IAssetState, IAssetDiff, emptyAssetDiff, emptyAssetState, IAssetBalances, ITransactionStats, emptyAssetBalances} from './IFormulaAnalysis'
 import {ContractFactoryCachable} from './ContractFactoryCachable'
 import * as AssetBalanceLogic from './AssetBalanceLogic'
+import {cryptoKittiesErc721Support} from '../instructions/002_sendERC721'
 
 
 /**
@@ -316,22 +317,46 @@ async function getCurrentBalances(formula: IFormula, state: IAssetState, contrac
                 const tokenIds = state.erc721Allowance[endpointIndex][tokenContractAddress]
 
                 try {
+                    // is approved for all tokens?
                     const approvedForAll = await contract.methods.isApprovedForAll(formula.endpoints[endpointIndex], contractAddress).call()
                     if (approvedForAll) {
-                        return Infinity
+                        return Infinity // approval for all tokens
                     }
 
+                    // is not approved for all, but such approval is requested?
                     if (tokenIds == Infinity) {
-                        return []
+                        return [] // approval for nothing
                     }
                 } catch (error) {
-                    return []
+                    // pass
                 }
 
-                // check who owns tokens
+                // setup approval check - support some old original-draft-ERC721 tokens
+                const suppForDeprecatedErc = cryptoKittiesErc721Support(contract)
+                const checkTokenApproval = async (contract: Contract<void>, tokenId) => {
+                    try {
+                        const result = await contract.methods.getApproved(tokenId).call()
+
+                        return result
+                    } catch (error) {
+                        // pass
+                    }
+
+                    try {
+                        const result = await suppForDeprecatedErc.methods.kittyIndexToApproved(tokenId).call()
+
+                        return result
+                    } catch (error) {
+                        // pass
+                    }
+
+                    return undefined
+                }
+
+                // check who is approved to control particular tokens
                 const tokenOwnerSigns = await Promise.all((tokenIds as BigNumber[]).map(async (tokenId): Promise<BigNumber> => {
                     try {
-                        const operator: Address = await contract.methods.getApproved(tokenId).call()
+                        const operator: Address = await checkTokenApproval(contract, tokenId)
                         const isOwner = operator.equals(contractAddress)
                         const result = isOwner ? tokenId : undefined
 

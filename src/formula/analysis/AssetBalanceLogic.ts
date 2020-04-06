@@ -254,7 +254,7 @@ export function maxState(stateA: IAssetState, stateB: IAssetState, ...extraState
 }
 
 /**
-    Select maximum values from multiple states and combine them togehter.
+    Substract one state values from other's with minimum value being zero.
 */
 export function subStatesUnsigned(stateA: IAssetState, stateB: IAssetState): IAssetState {
     const subNumbers = (valueA: BigNumber, valueB: BigNumber) => {

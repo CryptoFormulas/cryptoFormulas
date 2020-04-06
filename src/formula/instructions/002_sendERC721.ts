@@ -244,6 +244,32 @@ async function checkTokenAllowance(instructionCode: number, tokenId: BigNumber, 
     }]
 }
 
+export const cryptoKittiesErc721Support = (erc721Contract: Contract<void>): Contract<void> => {
+    const extraAbi: ContractEntryDefinition[] = [{
+        constant: true,
+        inputs: [
+            {
+                'name': '',
+                'type': 'uint256'
+            }
+        ],
+        name: 'kittyIndexToApproved',
+        outputs: [
+            {
+                'name': '',
+                'type': 'address'
+            }
+        ],
+        payable: false,
+        stateMutability: 'view' as 'view',
+        type: 'function' as 'function'
+    }]
+
+    const kittyContract = appendAbiToContract(erc721Contract, extraAbi)
+
+    return kittyContract
+}
+
 /*
     First draft of ERC721 hadn't methods `getApproved()` and `isApprovedForAll`,
     thus contracts implementing this obsolete standard can't be checked for approval
@@ -277,7 +303,7 @@ async function checkTokenAllowance_originalDraftErc721(formulasContract: Contrac
 
         return isApproved
     } catch (error) {
-        //pass
+        // pass
     }
 
     // no special ERC721 found

@@ -66,7 +66,7 @@ export class Formula implements IFormula {
     private sanitizeOperations(operations: IOperationData[]): IOperation[] {
         const sanitizeOperand = (operandType: ITypes, value: unknown) => {
             if (operandType == ITypes.address) {
-                return value instanceof Address ? value : Address.fromString(<string> value)
+                return value instanceof Address ? value : Address.fromString(value.toString())
             }
 
             const numericTypes = [ITypes.uint16, ITypes.uint32, ITypes.uint256, ITypes.endpoint, ITypes.signedEndpoint]
