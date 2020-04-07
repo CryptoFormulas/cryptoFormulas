@@ -101,7 +101,14 @@ async function analyzeAll(formula: IFormula, contractAddress: Address, contractF
     Returns transaction in which given Formula was executed in current network.
 */
 async function getExecutionTransaction(eth: Eth, formulasContract: Contract, formula: IFormula): Promise<ITransactionStats> {
-    const events = await formulasContract.getPastEvents('Formulas_FormulaExecuted', {filter: {messageHash: formula.messageHash}})
+    const options = {
+        fromBlock: 1,
+        filter: {
+            messageHash: formula.messageHash
+        }
+    }
+
+    const events = await formulasContract.getPastEvents('Formulas_FormulaExecuted', options)
     const relevantEvent = events[0]
     const block = await eth.getBlock(relevantEvent.blockNumber)
 
