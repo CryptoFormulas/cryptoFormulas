@@ -1,7 +1,5 @@
-//import 'openzeppelin-solidity/contracts/math/SafeMath.sol'; // can't be used now because Open-Zeppelin doesn't support solidity 0.6.x yet
-//import 'openzeppelin-solidity/contracts/utils/Address.sol'; // can't be used now because Open-Zeppelin doesn't support solidity 0.6.x yet
-import './libraries/SafeMath.sol';
-import './libraries/Address.sol';
+import 'openzeppelin-solidity/contracts/math/SafeMath.sol';
+import 'openzeppelin-solidity/contracts/utils/Address.sol';
 
 import './interfaces/Ownable.sol';
 

@@ -7,6 +7,8 @@ import {deployERC20, deployERC721} from './formulaTest'
 
 const gasLogNamespace = 'DonationWithrdawal'
 
+const tmpGas = {gas: 1000000, gasPrice: 2000}
+
 const testDonationWithdrawal = (prerequisities: testingTools.IPrerequisities) => async () => {
     it('withdraw eth', async () => {
         const amount = 100
@@ -26,7 +28,6 @@ const testDonationWithdrawal = (prerequisities: testingTools.IPrerequisities) =>
     })
 
      it('withdraw eth after someone else deposited eth', async () => {
-        const tmpGas = {gas: 1000000, gasPrice: 2000}
         const amount = 100
         const preload = 133
 
@@ -58,7 +59,6 @@ const testDonationWithdrawal = (prerequisities: testingTools.IPrerequisities) =>
     })
 
     it('rejects withdrawal of ether belonging to contract user', async () => {
-        const tmpGas = {gas: 1000000, gasPrice: 2000}
         const amount = 100
         const preload = 133
 
@@ -129,11 +129,11 @@ const testDonationWithdrawal = (prerequisities: testingTools.IPrerequisities) =>
         assert.equal((await tokenContract.methods.ownerOf(tokenId).call()).toString(), tokenDeployer.toString())
 
         // send tokens to Crypto Formulas contract
-        await tokenContract.methods.transferFrom(tokenDeployer, formulasContract.address, tokenId).send({from: tokenDeployer}).getReceipt()
+        await tokenContract.methods.transferFrom(tokenDeployer, formulasContract.address, tokenId).send({from: tokenDeployer, ...tmpGas}).getReceipt()
         assert.equal((await tokenContract.methods.ownerOf(tokenId).call()).toString(), formulasContract.address.toString())
 
         // withdraw tokens
-        const response = await formulasContract.methods.withdrawDonations(2, account1.address, tokenId, tokenContract.address).send({from: formulasDeployer}).getReceipt().catch(error => error)
+        const response = await formulasContract.methods.withdrawDonations(2, account1.address, tokenId, tokenContract.address).send({from: formulasDeployer, ...tmpGas}).getReceipt().catch(error => error)
         await prerequisities.gasAnalytics.recordTransaction(gasLogNamespace, 'erc721', response.transactionHash)
 
         // check withdrawal success

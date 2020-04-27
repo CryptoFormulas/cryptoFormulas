@@ -701,7 +701,7 @@ const testFormulaAnalyzer = (prerequisities: testingTools.IPrerequisities) => ()
                 // topup ether to account for transaction fees
                 await prerequisities.eth.sendTransaction({from: formulasDeployer, to: accounts[0].address, value: 10 * tmpGas.gas * tmpGas.gasPrice})
                 // give tokens to account
-                await tokenErc721Contract.methods.transferFrom(tokenErc721Deployer, accounts[0].address, tokenId).send({from: tokenErc721Deployer})
+                await tokenErc721Contract.methods.transferFrom(tokenErc721Deployer, accounts[0].address, tokenId).send({from: tokenErc721Deployer, ...tmpGas})
 
                 const analysis = await analyzeFormula(prerequisities.eth, formula, formulasContract.address, abiGetter)
 
@@ -732,7 +732,7 @@ const testFormulaAnalyzer = (prerequisities: testingTools.IPrerequisities) => ()
                 // topup ether to account for transaction fees
                 await prerequisities.eth.sendTransaction({from: formulasDeployer, to: accounts[0].address, value: 10 * tmpGas.gas * tmpGas.gasPrice})
                 // give tokens to account
-                await tokenErc721Contract.methods.transferFrom(tokenErc721Deployer, accounts[0].address, tokenId).send({from: tokenErc721Deployer})
+                await tokenErc721Contract.methods.transferFrom(tokenErc721Deployer, accounts[0].address, tokenId).send({from: tokenErc721Deployer, ...tmpGas})
                 // approve allowance for Crypto Formulas contract
                 const tx = await tokenErc721Contract.methods.approve(formulasContract.address, tokenId)
                 await accounts[0].sendTransaction({to: tokenErc721Contract.address, data: tx.encodeABI(), ...tmpGas}, prerequisities.eth).getReceipt()
@@ -765,7 +765,7 @@ const testFormulaAnalyzer = (prerequisities: testingTools.IPrerequisities) => ()
                 // topup ether to account for transaction fees
                 await prerequisities.eth.sendTransaction({from: formulasDeployer, to: accounts[0].address, value: 10 * tmpGas.gas * tmpGas.gasPrice})
                 // give tokens to account
-                await tokenErc721Contract.methods.transferFrom(tokenErc721Deployer, accounts[0].address, tokenId).send({from: tokenErc721Deployer})
+                await tokenErc721Contract.methods.transferFrom(tokenErc721Deployer, accounts[0].address, tokenId).send({from: tokenErc721Deployer, ...tmpGas})
                 // approve allowance for Crypto Formulas contract
                 const tx = await tokenErc721Contract.methods.approve(formulasContract.address, tokenId)
                 await accounts[0].sendTransaction({to: tokenErc721Contract.address, data: tx.encodeABI(), ...tmpGas}, prerequisities.eth).getReceipt()
@@ -1977,13 +1977,13 @@ const testFormulaAnalyzer = (prerequisities: testingTools.IPrerequisities) => ()
         const tx1 = await tokenErc20Contract.methods.approve(formulasContract.address, amountTokenErc20)
         await accounts[1].sendTransaction({to: tokenErc20Contract.address, data: tx1.encodeABI(), ...tmpGas}, prerequisities.eth).getReceipt()
         // give tokens to account
-        await tokenErc20Contract.methods.transfer(accounts[1].address, amountTokenErc20).send({from: tokenErc20Deployer})
+        await tokenErc20Contract.methods.transfer(accounts[1].address, amountTokenErc20).send({from: tokenErc20Deployer, ...tmpGas})
 
         // 4th operation
         // topup ether to account for transaction fees
         await prerequisities.eth.sendTransaction({from: formulasDeployer, to: accounts[1].address, value: 10 * tmpGas.gas * tmpGas.gasPrice})
         // give tokens to account
-        await tokenErc721Contract.methods.transferFrom(tokenErc721Deployer, accounts[1].address, tokenId).send({from: tokenErc721Deployer})
+        await tokenErc721Contract.methods.transferFrom(tokenErc721Deployer, accounts[1].address, tokenId).send({from: tokenErc721Deployer, ...tmpGas})
         // approve allowance for Crypto Formulas contract
         const tx2 = await tokenErc721Contract.methods.approve(formulasContract.address, tokenId)
         await accounts[1].sendTransaction({to: tokenErc721Contract.address, data: tx2.encodeABI(), ...tmpGas}, prerequisities.eth).getReceipt()

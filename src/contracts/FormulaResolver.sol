@@ -1,8 +1,5 @@
 import './FormulaDefiner.sol';
 
-//import 'openzeppelin-solidity/contracts/utils/Address.sol'; // can't be used now because Open-Zeppelin doesn't support solidity 0.6.x yet
-import './libraries/Address.sol';
-
 // transport adapters must be implemented as contracts (instead of libraries)
 // so they support member properties (that's the cause of weird naming prefixes)
 import './transferAdapters/ERC20.sol';
@@ -58,7 +55,7 @@ contract FormulaResolver is FormulaDefiner, Constants, FormulasAdapter_Ether, Fo
         if (operation.instruction == 3) {
             (uint16 fromIndex, uint16 to, uint256 amount) = extractGenericEtherParams(operation, endpoints.length, signedEndpointCount);
 
-            ether_transferValue(endpoints[fromIndex], Address.toPayable(endpoints[to]), amount);
+            ether_transferValue(endpoints[fromIndex], payable(endpoints[to]), amount);
             return;
         }
 
@@ -78,7 +75,7 @@ contract FormulaResolver is FormulaDefiner, Constants, FormulasAdapter_Ether, Fo
             // pay fee of `formulaFee` * `operation count` (including this fee operation)
             require(amount >= formulaInfo.operations.length * formulaFee, 'Fee amount is too small.');
 
-            ether_transferValueInside(endpoints[fromIndex], Address.toPayable(address(this)), amount);
+            ether_transferValueInside(endpoints[fromIndex], payable(address(this)), amount);
             emit FormulasResolver_feePaid(endpoints[fromIndex], amount);
 
             return;

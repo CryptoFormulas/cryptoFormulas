@@ -103,7 +103,7 @@ async function topupTokenErc721(env: ITopupEnvironment, account: Account, tokenI
         await acc
 
         // send token to address
-        await env.tokenErc721Contract.methods.transferFrom(env.universalDonor, account.address, tokenId).send({from: env.universalDonor}).getReceipt()
+        await env.tokenErc721Contract.methods.transferFrom(env.universalDonor, account.address, tokenId).send({from: env.universalDonor, ...tmpGas}).getReceipt()
         assert.equal((await env.tokenErc721Contract.methods.ownerOf(tokenId).call()).toString(), account.address.toString())
     }, Promise.resolve())
 

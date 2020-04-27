@@ -1,4 +1,10 @@
 /*
+    This is upgraded version of byte manipulating library `solidity-bytes-utils` version `0.0.8`
+    Changelog:
+    - support for solidity 0.6.* added
+*/
+
+/*
  * @title Solidity Bytes Arrays Utils
  * @author Gonçalo Sá <goncalo.sa@consensys.net>
  *
