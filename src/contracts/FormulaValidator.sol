@@ -58,7 +58,11 @@ contract FormulaValidator is FormulaDecompiler, FormulaPresigner {
                 return false;
             }
 
-            if (!SignatureVerifier.verifySignaturePrefixed(formulaInfo.endpoints[i], hash, formulaInfo.signatures[i])) {
+            // create hash that should be signed by the given endpoint
+            uint16 endpointIndex = uint16(i);
+            bytes32 positionHash = keccak256(abi.encodePacked(hash, endpointIndex));
+
+            if (!SignatureVerifier.verifySignaturePrefixed(formulaInfo.endpoints[i], positionHash, formulaInfo.signatures[i])) {
                 return false;
             }
         }

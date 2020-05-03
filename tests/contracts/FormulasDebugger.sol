@@ -69,7 +69,7 @@ contract EtherFeeder {
     }
 
     function sendEther(uint256 amount, CryptoFormulas to) public {
-        to.topUpEther.value(amount)();
+        to.topUpEther{value: amount}();
     }
 }
 

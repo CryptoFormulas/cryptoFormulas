@@ -61,6 +61,7 @@ export interface IFormula extends Readonly<IFormulaData> {
     compile: () => string
     cloneNew: () => IFormula
     isSigned: (endpointIndex: number) => boolean
+    getMessageToSign: (endpointIndex: number) => string
 
     //static decompile(data: string): IFormula
 }
@@ -121,5 +122,9 @@ export class DummyFormula implements IFormula {
 
     public isSigned(endpointIndex: number): boolean {
         return false
+    }
+
+    public getMessageToSign(endpointIndex: number): string {
+        return Address.ZERO.toString()
     }
 }

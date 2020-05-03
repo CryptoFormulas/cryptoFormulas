@@ -339,6 +339,13 @@ export class Formula implements IFormula {
         return formula
     }
 
+    public getMessageToSign(endpointIndex: number): string {
+        const messageToHash = '0x' + encodePacked([ITypes.uint256, ITypes.endpoint], [this.messageHash, endpointIndex])
+        const result = '0x' + keccak256(messageToHash).toString('hex')
+
+        return result
+    }
+
     /**
         Creates copy of the Formula with unique salt (that resulting in different hash).
     */

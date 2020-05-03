@@ -5,6 +5,8 @@ import {deployFormulas, deployERC20} from './formulaTest'
 import {testingTools} from 'soliditySapper'
 import {Formula} from '../../src/formula/Formula'
 import {emptySignature} from '../../src/formula/IFormula'
+import {signFormulaEndpoint} from '../shared/signFormula'
+
 
 const testFormulaClass = (prerequisities: testingTools.IPrerequisities) => () => {
     let token1Contract: Contract
@@ -126,7 +128,7 @@ const testFormulaClass = (prerequisities: testingTools.IPrerequisities) => () =>
         const unsignedFormula = new Formula(formulaData)
         const formula = new Formula({
             ...unsignedFormula,
-            signatures: accounts.map(item => item.sign(unsignedFormula.messageHash).signature)
+            signatures: accounts.map((item, index) => signFormulaEndpoint(unsignedFormula, accounts[index], index).signature)
         })
 
         const clonedFormula = formula.cloneNew()
@@ -157,13 +159,13 @@ const testFormulaClass = (prerequisities: testingTools.IPrerequisities) => () =>
         assert.isFalse(unsignedFormula.isSigned(0))
         assert.isFalse(unsignedFormula.isSigned(1))
 
-        const signAccount = (item) => item.sign(unsignedFormula.messageHash).signature
+        const signAccount = (item, index) => signFormulaEndpoint(unsignedFormula, item, index).signature
 
         const partiallySignedFormula1 = new Formula({
             ...unsignedFormula,
             signatures: [
                 emptySignature,
-                signAccount(accounts[0])
+                signAccount(accounts[0], 1)
             ]
         })
         assert.isFalse(partiallySignedFormula1.isSigned(0))
@@ -172,7 +174,7 @@ const testFormulaClass = (prerequisities: testingTools.IPrerequisities) => () =>
         const partiallySignedFormula2 = new Formula({
             ...unsignedFormula,
             signatures: [
-                signAccount(accounts[0])
+                signAccount(accounts[0], 0)
             ]
         })
         assert.isTrue(partiallySignedFormula2.isSigned(0))
@@ -236,7 +238,7 @@ const testFormulaClass = (prerequisities: testingTools.IPrerequisities) => () =>
             const unsignedFormula = new Formula(formulaData)
             const signedFormula = new Formula({
                 ...formulaData,
-                signatures: accounts.map(item => item.sign(unsignedFormula.messageHash).signature)
+                signatures: accounts.map((item, index) => signFormulaEndpoint(unsignedFormula, item, index).signature)
             })
 
             const compiledFormula = signedFormula.compile()

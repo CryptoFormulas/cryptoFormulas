@@ -6,6 +6,7 @@ import {IOperationData, IFormula} from '../../src/formula/IFormula'
 import {Formula} from '../../src/formula/Formula'
 import {PresignStates} from '../../src/formula/analysis'
 import {BigNumber} from 'web3x/ethers/bignumber'
+import {signFormulaEndpoint} from './signFormula'
 
 
 export type IEndpointTesting = Account
@@ -19,7 +20,7 @@ export async function prepareSignedFormula(contract: Contract, operations: IOper
         operations
     })
 
-    const signatures = await Promise.all(endpoints.slice(0, signedEndpointCount).map(item => item.sign(rawFormula.messageHash)))
+    const signatures = await Promise.all(endpoints.slice(0, signedEndpointCount).map((item, index) => signFormulaEndpoint(rawFormula, item, index)))
 
     const formula = new Formula({
         ...rawFormula,
@@ -322,5 +323,47 @@ export const testFormulaValidation = (prerequisities: testingTools.IPrerequisiti
         // check that formula is invalid now
         const isValidAfter = await contract.methods.validateFormula(contractFormula).call()
         assert.isTrue(isValidAfter)
+    })
+
+    it(`endpoints and signatures can't be swapped`, async () => {
+        const {contract, deployer: universalDonor} = await deploy(prerequisities)
+        const accounts = [Account.create(), Account.create()]
+        const amount = 100000
+        const operations = [
+            {
+                instruction: 0,
+                operands: [0, 0, amount]
+            }
+        ]
+
+        const endpoints = accounts
+        const formula = await prepareSignedFormula(contract, operations, endpoints, 2)
+
+        const formulaSwappedEndpoints = new Formula({
+            ...formula,
+            endpoints: [formula.endpoints[1], formula.endpoints[0]],
+            signatures: [formula.signatures[1], formula.signatures[0]],
+        })
+
+        const runValidation = async (formula) => {
+            const compiledFormula = formula.compile()
+
+            const contractFormula = await contract.methods.decompileFormulaCompiled(compiledFormula).call()
+
+            const response = await contract.methods.validateFormula(contractFormula).send({from: universalDonor}).getReceipt().catch(error => error)
+            assert.isFalse(response instanceof Error)
+
+            await prerequisities.gasAnalytics.recordTransaction(gasLogNamespace, 'validateFormula', response.transactionHash)
+
+            const callResult = await contract.methods.validateFormula(contractFormula).call()
+
+            return callResult
+        }
+
+        const callResult1 = await runValidation(formula)
+        const callResult2 = await runValidation(formulaSwappedEndpoints)
+
+        assert.isTrue(callResult1)
+        assert.isFalse(callResult2)
     })
 }

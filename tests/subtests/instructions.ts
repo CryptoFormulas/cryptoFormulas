@@ -526,8 +526,7 @@ export const testInstructions = (prerequisities: testingTools.IPrerequisities, g
             await manageFormulaTest(startingBalances, endBalances, formulaSetting)
         })
 
-        // TODO: remove skip on this test when Ganache + Istanbul hardfork problems are resolved see https://github.com/trufflesuite/ganache-core/issues/510
-        it.skip('Exchange ether for ERC721 - multiple tokens', async () => {
+        it('Exchange ether for ERC721 - multiple tokens', async () => {
             const universalDonor = (await prerequisities.servant.eth.getAccounts())[0]
             const tokenSet1 = [0, 1]
             const tokenSet2 = [2]

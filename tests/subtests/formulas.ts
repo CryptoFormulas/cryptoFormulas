@@ -9,6 +9,7 @@ import {Formula} from '../../src/formula/Formula'
 import {bigNumberify} from 'web3x/ethers/bignumber'
 import {testInstructions} from './instructions'
 import {PresignStates} from '../../src/formula/analysis'
+import {signFormulaEndpoint, requestFormulaEndpointSign} from '../shared/signFormula'
 
 
 const gasLogNamespace = 'Formulas'
@@ -69,7 +70,7 @@ const testFormulas = (prerequisities: testingTools.IPrerequisities) => () => {
         const signedFormula = new Formula({
             ...unsignedFormula,
             signatures: [
-                await prerequisities.eth.sign(deployer, unsignedFormula.messageHash)
+                await requestFormulaEndpointSign(prerequisities.eth, unsignedFormula, deployer, 0)
             ]
         })
 
@@ -213,7 +214,7 @@ const testFormulas = (prerequisities: testingTools.IPrerequisities) => () => {
             ...tmpFormula,
             signatures: [
                 null,
-                (await account2.sign(tmpFormula.messageHash)).signature,
+                signFormulaEndpoint(tmpFormula, account2, 1).signature,
                 null
             ]
         })

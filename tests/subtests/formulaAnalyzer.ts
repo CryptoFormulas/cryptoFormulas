@@ -12,6 +12,7 @@ import {PresignStates, emptyAssetState} from '../../src/formula/analysis'
 import {topupAccounts, ITopupEnvironment} from '../shared/topup'
 import {bigNumberify} from 'web3x/ethers/bignumber'
 import {CommonErrorReasons, ErrorReasons_000, ErrorReasons_001, ErrorReasons_002, ErrorReasons_003, ErrorReasons_004, ErrorReasons_005} from '../../src/formula/instructions'
+import {signFormulaEndpoint} from '../shared/signFormula'
 
 
 const contractNames = {
@@ -1886,7 +1887,7 @@ const testFormulaAnalyzer = (prerequisities: testingTools.IPrerequisities) => ()
         const formula = new Formula({
             ...tmpFormula,
             signatures: [
-                accounts[0].sign(tmpFormula.messageHash).signature
+                signFormulaEndpoint(tmpFormula, accounts[0], 0).signature
             ]
         })
 
@@ -1928,7 +1929,7 @@ const testFormulaAnalyzer = (prerequisities: testingTools.IPrerequisities) => ()
         const formula = new Formula({
             ...tmpFormula,
             signatures: [
-                accounts[0].sign(tmpFormula.messageHash).signature
+                signFormulaEndpoint(tmpFormula, accounts[0], 0).signature
             ]
         })
 
