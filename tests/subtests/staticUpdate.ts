@@ -38,7 +38,7 @@ const testStaticUpdate = (prerequisities: testingTools.IPrerequisities) => async
         const {contract} = await deployStaticUpdate(prerequisities)
 
         const nextVersion = await contract.methods.nextVersion().call()
-        const newestVersion = await contract.methods.nextVersion().call()
+        const newestVersion = await contract.methods.newestVersion().call()
         const securityHazard = await contract.methods.versionIsSecurityHazard().call()
 
         assert.equal(nextVersion, AddressZero)

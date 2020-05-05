@@ -8,7 +8,7 @@ import './transferAdapters/ERC721.sol';
 import './transferAdapters/Ether.sol';
 
 /**
-    Contract enabling withdrawal of donations. Assets recieved from unexpected sources are considered donations.
+    Contract enabling withdrawal of donations and fees. Assets recieved from unexpected sources are considered donations.
 */
 contract DonationWithdrawal is Ownable, FormulasAdapter_Ether, FormulasAdapter_ERC721, FormulasAdapter_ERC20 {
 

@@ -10,16 +10,17 @@ import {bigNumberify} from 'web3x/ethers/bignumber'
 import {testInstructions} from './instructions'
 import {PresignStates} from '../../src/formula/analysis'
 import {signFormulaEndpoint, requestFormulaEndpointSign} from '../shared/signFormula'
+import {deployEtherMartyr} from './formulaDebugger'
 
 
 const gasLogNamespace = 'Formulas'
+
+const tmpGas = {gas: 1000000, gasPrice: 2000}
 
 /**
     Top ups ether to Crypto Formulas contract on behalf of given account.
 */
 const topupInnerEth = async (prerequisities: testingTools.IPrerequisities, donor: Address, contract: Contract<void>, account: Account) => {
-    const tmpGas = {gas: 1000000, gasPrice: 2000}
-
     await prerequisities.eth.sendTransaction({from: donor, to: account.address, value: 10 ** 13}).getReceipt()
     assert.isOk(await prerequisities.eth.getBalance(account.address))
 
@@ -316,6 +317,44 @@ const testFormulas = (prerequisities: testingTools.IPrerequisities) => () => {
             ]
 
             await manageFormulaTest(startingBalances, endBalances, formulaSetting, extraFormulas)
+        })
+    })
+
+    // to prevent incidents like when Crypto Formulas smart contract didn't include implementation of StaticUpdate
+    // these tests should check for important features presence - like Ownable, StaticUpdate, etc.
+    // checks are meant to be very simple, just check if contract has some specific method or something similar
+    describe('Features implemented', () => {
+        it('is ownable', async () => {
+            const {contract, deployer} = await deployFormulas(prerequisities, false)
+
+            const account = Account.create()
+
+            assert.equal((await contract.methods.owner().call()).toString(), deployer.toString())
+            await contract.methods.transferOwnership(account.address).send({from: deployer, ...tmpGas})
+            assert.equal((await contract.methods.owner().call()).toString(), account.address.toString())
+        })
+
+        it('has StaticUpdate mechanism', async () => {
+            const {contract, deployer} = await deployFormulas(prerequisities, false)
+
+            const account = Account.create()
+
+            assert.equal((await contract.methods.newestVersion().call()).toString(), Address.ZERO.toString())
+            await contract.methods.setNewVerion(account.address, true).send({from: deployer, ...tmpGas})
+            assert.equal((await contract.methods.newestVersion().call()).toString(), account.address.toString())
+            assert.isOk((await contract.methods.versionIsSecurityHazard().call()).toString())
+        })
+
+        it('allows withdrawal of fees and donations', async () => {
+            const {contract, deployer} = await deployFormulas(prerequisities, false)
+
+            const etherAmount = 1
+            const {contract: martyrContract, deployer: martyrDeployer} = await deployEtherMartyr(prerequisities, contract.address, etherAmount)
+
+            const account = Account.create()
+
+            await contract.methods.withdrawDonations(0, account.address, etherAmount, Address.ZERO).send({from: deployer, ...tmpGas})
+            assert.equal(await prerequisities.eth.getBalance(account.address), etherAmount)
         })
     })
 
