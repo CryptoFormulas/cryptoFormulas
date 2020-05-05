@@ -43,7 +43,7 @@ export interface IFormulaEnvironment extends IFormulaSetting {//, IFormulaTestVa
 /**
     Deploy Crypto Formulas contract.
 */
-export async function deployFormulas(prerequisities: testingTools.IPrerequisities, fees: boolean/* = true*/) {
+export async function deployFormulas(prerequisities: testingTools.IPrerequisities, fees: boolean) {
     const contractSource = fees ? 'CryptoFormulas:CryptoFormulas' : 'FormulasFeeless:FormulasFeeless'
 
     const deployer = (await prerequisities.servant.eth.getAccounts())[0]

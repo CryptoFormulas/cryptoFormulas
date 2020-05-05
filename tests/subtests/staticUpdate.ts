@@ -1,6 +1,7 @@
 import {assert} from 'chai'
 import {testingTools} from 'soliditySapper'
 import {AddressZero} from 'web3x/ethers/constants'
+import {deployFormulas} from './formulaTest'
 
 
 /**
@@ -140,6 +141,18 @@ const testStaticUpdate = (prerequisities: testingTools.IPrerequisities) => async
         const securityHazard = await contract.methods.versionIsSecurityHazard().call()
 
         assert.equal(nextAddress, AddressZero)
+        assert.isFalse(securityHazard)
+    })
+
+    it('Crypto Formulas is using StaticUpdate', async () => {
+        const {contract} = await deployFormulas(prerequisities, false)
+
+        const nextVersion = await contract.methods.nextVersion().call()
+        const newestVersion = await contract.methods.nextVersion().call()
+        const securityHazard = await contract.methods.versionIsSecurityHazard().call()
+
+        assert.equal(nextVersion, AddressZero)
+        assert.equal(newestVersion, AddressZero)
         assert.isFalse(securityHazard)
     })
 }

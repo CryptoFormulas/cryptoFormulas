@@ -7,6 +7,7 @@ import './FormulaDecompiler.sol';
 import './FormulaResolver.sol';
 import './DonationWithdrawal.sol';
 import './interfaces/Ownable.sol';
+import './StaticUpdate.sol';
 
 // TODO: consider adding ERC223 support for recieving ERC20/ERC223 funds
 // TODO: consider support for recieving and sending tokens via transfer() -> this is needed for cases when 3rd party
@@ -16,13 +17,13 @@ import './interfaces/Ownable.sol';
     Crypto Formulas contract works as VM with instruction set focused on manipulating the most common
     Ethereum based assets (native Ether, ERC20 tokens and ERC721 tokens).
 */
-contract CryptoFormulas is Ownable, FormulaDecompiler, FormulaValidator, FormulaResolver, DonationWithdrawal {
+contract CryptoFormulas is Ownable, FormulaDecompiler, FormulaValidator, FormulaResolver, DonationWithdrawal, StaticUpdate {
 
     event Formulas_FormulaExecuted(bytes32 indexed messageHash);
 
     mapping(bytes32 => bool) public executedFormulas;
 
-    constructor() Ownable() public {
+    constructor() StaticUpdate() public {
 
     }
 
